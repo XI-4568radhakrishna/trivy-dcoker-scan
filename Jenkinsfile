@@ -72,18 +72,16 @@ pipeline {
             } 
       }*/
       stage('Deploying fastapi App to Kubernetes') {
-          environment {
-                PATH = "/usr/local/bin:${env.PATH}"
-            }
-      steps {
-        script {
-          sh ('aws eks update-kubeconfig --name sdlc-eks-cluster --region us-east-1')
-          sh '/usr/local/bin/kubectl version --client'
-          sh "kubectl get ns"
-          sh "kubectl apply -f sample-k8s-deployment.yaml"
-          sh "kubectl apply -f sample-k8s-service.yaml"
+          
+            steps {
+                script {
+                    sh ('aws eks update-kubeconfig --name sdlc-eks-cluster --region us-east-1')
+                    sh '/usr/local/bin/kubectl version --client'
+                    sh "kubectl get ns"
+                    sh "kubectl apply -f sample-k8s-deployment.yaml"
+                    sh "kubectl apply -f sample-k8s-service.yaml"
+                }
+             }
         }
-      }
-    }
     }
 }
