@@ -6,6 +6,8 @@ pipeline {
         IMAGE_REPO_NAME="aisdlc"
         IMAGE_TAG="v121"
         REPOSITORY_URI = "864899865567.dkr.ecr.us-east-1.amazonaws.com/aisdlc"
+        EKS_CLUSTER_NAME = "sdlc-eks-cluster"
+        AWS_CREDENTIALS_ID = "awscred"
     }
    
     stages {
