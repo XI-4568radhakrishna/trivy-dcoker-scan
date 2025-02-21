@@ -49,13 +49,13 @@ pipeline {
      stage('Set up Kubeconfig for EKS') {
             steps {
                 script {
-                    
-                    sh "aws eks update-kubeconfig --region us-east-1 --name sdlc-eks-cluster"
-
-                    
+                    withAWS(credentials: AWS_CREDENTIALS_ID, region: AWS_REGION) {
+                        sh "aws eks update-kubeconfig --region ${AWS_REGION} --name ${EKS_CLUSTER_NAME}"
+                    }
                 }
             }
-       }
+        }
+
        stage('Wait Before Test') {
             steps {
                 echo 'Waiting for 10 seconds before deployment...'
