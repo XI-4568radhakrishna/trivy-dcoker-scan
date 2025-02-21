@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eksdemo-fastapi
+  labels:
+    app: eksdemo-fastapi
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eksdemo-fastapi
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: eksdemo-fastapi
+    spec:
+      containers:
+      - image: 864899865567.dkr.ecr.us-east-1.amazonaws.com/aisdlc:latest
+        imagePullPolicy: Always
+        name: eksdemo-fastapi
+        ports:
+        - containerPort: 80
+          protocol: TCP
+#2023 updates
