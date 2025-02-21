@@ -19,8 +19,8 @@ pipeline {
                 script {
                 /*sh """aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/z9m4u8u6 """*/
                 sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 864899865567.dkr.ecr.us-east-1.amazonaws.com"   
-                }
-                 
+                
+              }  
             }
         }
         // cloning Git repo 
@@ -58,7 +58,7 @@ pipeline {
                         sh "aws eks update-kubeconfig --region ${AWS_DEFAULT_REGION} --name ${EKS_CLUSTER_NAME}"*/
                         sh "aws eks update-kubeconfig --region us-east-1 --name sdlc-eks-cluster"
 
-                    }
+                    
                 }
             }
        }
@@ -78,4 +78,3 @@ pipeline {
             }
         }
    }
-}
