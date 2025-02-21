@@ -54,8 +54,10 @@ pipeline {
      stage('Set up Kubeconfig for EKS') {
             steps {
                 script {
-                    withAWS(credentials: AWS_CREDENTIALS_ID, region: AWS_DEFAULT_REGION) {
-                        sh "aws eks update-kubeconfig --region ${AWS_DEFAULT_REGION} --name ${EKS_CLUSTER_NAME}"
+                    /*withAWS(credentials: AWS_CREDENTIALS_ID, region: AWS_DEFAULT_REGION) {
+                        sh "aws eks update-kubeconfig --region ${AWS_DEFAULT_REGION} --name ${EKS_CLUSTER_NAME}"*/
+                        sh "aws eks update-kubeconfig --region us-east-1 --name sdlc-eks-cluster"
+
                     }
                 }
             }
