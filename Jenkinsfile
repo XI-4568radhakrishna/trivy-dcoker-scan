@@ -74,7 +74,7 @@ pipeline {
       stage('Deploying fastapi App to Kubernetes') {
       steps {
         script {
-          sh ('aws eks update-kubeconfig --name my-eks-cluster --region us-east-1')
+          sh ('aws eks update-kubeconfig --name sdlc-eks-cluster --region us-east-1')
           sh "kubectl get ns"
           sh "kubectl apply -f sample-k8s-deployment.yaml"
           sh "kubectl apply -f sample-k8s-service.yaml"
