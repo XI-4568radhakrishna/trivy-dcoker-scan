@@ -66,11 +66,11 @@ pipeline {
       stage('Deploy to EKS') {
             steps {
                 script {
-                    sh "kubectl apply -f sample-k8s-deployment.yaml"
-                    sh "kubectl apply -f "sample-k8s-service.yaml"
+                    sh 'kubectl apply -f "sample-k8s-deployment.yaml"'
+                    sh 'kubectl apply -f "sample-k8s-service.yaml"'
                 }
             }
         }
-        
+      
     }
 }
