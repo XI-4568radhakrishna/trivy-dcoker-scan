@@ -45,7 +45,7 @@ pipeline {
          }
         }
       }
-     // Setting up EKS cluster configuration
+     /*// Setting up EKS cluster configuration
      stage('Set up Kubeconfig for EKS') {
             steps {
                 script {
@@ -54,7 +54,7 @@ pipeline {
                     }
                 }
             }
-        }
+        }*/
 
        stage('Wait Before Test') {
             steps {
@@ -62,7 +62,7 @@ pipeline {
                 sleep time: 10, unit: 'SECONDS'  // Sleep for 10 seconds
             }
         } 
-    //Deploy manifest files to EKS cluster
+    /*//Deploy manifest files to EKS cluster
       stage('Deploy to EKS') {
             steps {
                 script {
@@ -70,6 +70,16 @@ pipeline {
                     sh 'kubectl apply -f "sample-k8s-service.yaml"'
                 }
             } 
+      }*/
+      stage('Deploying fastapi App to Kubernetes') {
+      steps {
+        script {
+          sh ('aws eks update-kubeconfig --name my-eks-cluster --region us-east-1')
+          sh "kubectl get ns"
+          sh "kubectl apply -f sample-k8s-deployment.yaml"
+          sh "kubectl apply -f sample-k8s-service.yaml"
+        }
       }
+    }
     }
 }
