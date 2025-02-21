@@ -43,5 +43,22 @@ pipeline {
          }
         }
       }
+     stage('Set up Kubeconfig for EKS') {
+            steps {
+                script {
+                    withAWS(credentials: AWS_CREDENTIALS_ID, region: AWS_REGION) {
+                        sh "aws eks update-kubeconfig --region ${AWS_REGION} --name ${EKS_CLUSTER_NAME}"
+                    }
+                }
+            }
+       }
+      stage('Deploy to EKS') {
+            steps {
+                script {
+                    sh "kubectl apply -f k8s-deployment.yaml"
+                }
+            }
+        }
+        
     }
 }
