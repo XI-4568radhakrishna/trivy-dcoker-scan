@@ -4,8 +4,11 @@ pipeline {
         AWS_ACCOUNT_ID="864899865567"
         AWS_DEFAULT_REGION="us-east-1"
         IMAGE_REPO_NAME="aisdlc"
-        IMAGE_TAG="v121"
+        IMAGE_TAG="latest"
         REPOSITORY_URI = "864899865567.dkr.ecr.us-east-1.amazonaws.com/aisdlc"
+        EKS_CLUSTER_NAME = "sdlc-eks-cluster"
+        AWS_CREDENTIALS_ID = "awscreds"
+        
     }
    // Login to ECR 
     stages {
@@ -47,8 +50,8 @@ pipeline {
      stage('Set up Kubeconfig for EKS') {
             steps {
                 script {
-                    withAWS(credentials: AWS_CREDENTIALS_ID, region: AWS_REGION) {
-                        sh "aws eks update-kubeconfig --region ${AWS_REGION} --name ${EKS_CLUSTER_NAME}"
+                    withAWS(credentials: AWS_CREDENTIALS_ID, region: AWS_DEFAULT_REGION) {
+                        sh "aws eks update-kubeconfig --region ${AWS_DEFAULT_REGION} --name ${EKS_CLUSTER_NAME}"
                     }
                 }
             }
