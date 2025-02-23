@@ -4,7 +4,7 @@ pipeline {
         AWS_ACCOUNT_ID="864899865567"
         AWS_DEFAULT_REGION="us-east-1"
         IMAGE_REPO_NAME="aisdlc"
-        IMAGE_TAG="v121"
+        IMAGE_TAG="latest"
         REPOSITORY_URI = "864899865567.dkr.ecr.us-east-1.amazonaws.com/aisdlc"
         EKS_CLUSTER_NAME = "sdlc-eks-cluster"
         AWS_CREDENTIALS_ID = "awscred"
@@ -15,7 +15,7 @@ pipeline {
          stage('Logging into AWS ECR') {
             steps {
                 script {
-                sh """aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/z9m4u8u6 """
+                sh """aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 864899865567.dkr.ecr.us-east-1.amazonaws.com """
                 }
                  
             }
