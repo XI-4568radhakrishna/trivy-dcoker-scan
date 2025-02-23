@@ -45,6 +45,22 @@ pipeline {
          }
         }
       }
+     stage('Install kubectl') {
+            steps {
+                script {
+                    sh """
+                    curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.32.0/2024-12-20/bin/linux/amd64/kubectl"
+                    chmod +x kubectl
+                    sudo mv kubectl /usr/local/bin/
+                    """
+                }
+            }
+        }
+    stage('Verify kubectl') {
+            steps {
+                sh 'kubectl version --client'
+            }
+        }
      /*// Setting up EKS cluster configuration
      stage('Set up Kubeconfig for EKS') {
             steps {
