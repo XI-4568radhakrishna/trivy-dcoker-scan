@@ -75,7 +75,7 @@ pipeline {
           
             steps {
                 script {
-                    #!/bin/bash -l
+                    
                     sh ('aws eks update-kubeconfig --name sdlc-eks-cluster --region us-east-1')
                     sh "kubectl get ns"
                     sh "kubectl apply -f sample-k8s-deployment.yaml"
