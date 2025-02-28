@@ -29,11 +29,12 @@ pipeline {
         }
 
          stage('Logging into AWS ECR') {
-            steps {
-                script {
-                sh """aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 864899865567.dkr.ecr.us-east-1.amazonaws.com """
-                }
-                 
+           steps {
+              script {
+                  sh """aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 864899865567.dkr.ecr.us-east-1.amazonaws.com """
+                
+              }
+             
             }
         }
         
@@ -50,6 +51,10 @@ pipeline {
                         sh 'sonar-scanner -Dsonar.login=$SONARQUBE_TOKEN'
                     }
                 }
+                
+            }
+        }
+        
     // Building Docker images
     stage('Building image') {
       steps{
