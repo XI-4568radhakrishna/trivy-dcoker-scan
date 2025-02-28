@@ -8,10 +8,25 @@ pipeline {
         REPOSITORY_URI = "864899865567.dkr.ecr.us-east-1.amazonaws.com/aisdlc"
         EKS_CLUSTER_NAME = "sdlc-eks-cluster"
         AWS_CREDENTIALS_ID = "awscred"
+        SONAR_URL = 'http://54.89.31.89:9000/'
+        SONAR_USER = "admin"
+        SONAR_PASS = "sonar@123
+        SONAR_AUTH_TOKEN = "sonar-devops"
     }
    
     stages {
-        
+        stage('SonarQube Analysis') {
+            steps {
+                withCredentials([string(credentialsId: 'sonarcred', variable: 'SONAR_AUTH_TOKEN')]) {
+                    sh '''
+                        sonar-scanner \
+                        -Dsonar.projectKey=sonar-devops \
+                        -Dsonar.host.url=$SONAR_URL \
+                        -Dsonar.login=$SONAR_AUTH_TOKEN
+                    '''
+                }
+            }
+
          stage('Logging into AWS ECR') {
             steps {
                 script {
@@ -26,7 +41,14 @@ pipeline {
                 checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'https://github.com/XI-4568radhakrishna/Fast-api-2.git']]])     
             }
         }
-  
+   stage('SonarQube Scan') {
+            steps {
+                script {
+                    // Run SonarQube scanner to analyze the code
+                    withSonarQubeEnv(SONARQUBE_SERVER) {
+                        sh 'sonar-scanner -Dsonar.login=$SONARQUBE_TOKEN'
+                    }
+                }
     // Building Docker images
     stage('Building image') {
       steps{
@@ -45,6 +67,14 @@ pipeline {
          }
         }
       }
+    stage('Quality Gate') {
+            steps {
+                script {
+                    // Wait for SonarQube Quality Gate to pass
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
      stage('Install kubectl') {
             steps {
                 script {
