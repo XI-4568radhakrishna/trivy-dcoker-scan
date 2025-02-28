@@ -10,7 +10,7 @@ pipeline {
         AWS_CREDENTIALS_ID = "awscred"
         SONAR_URL = 'http://54.89.31.89:9000/'
         SONAR_USER = "admin"
-        SONAR_PASS = "sonar@123
+        SONAR_PASS = "sonar@123"
         SONAR_AUTH_TOKEN = "sonar-devops"
     }
    
