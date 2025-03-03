@@ -4,7 +4,7 @@ pipeline {
         AWS_ACCOUNT_ID="864899865567"
         AWS_DEFAULT_REGION="us-east-1"
         IMAGE_REPO_NAME="aisdlc"
-        IMAGE_TAG="v121"
+        IMAGE_TAG="latest"
         REPOSITORY_URI = "864899865567.dkr.ecr.us-east-1.amazonaws.com/aisdlc"
     }
    
@@ -29,7 +29,7 @@ pipeline {
     stage('Building image') {
       steps{
         script {
-          dockerImage = docker.build "${IMAGE_REPO_NAME}:${IMAGE_TAG}"
+        sh """docker build -t aisdlc ."""
         }
       }
     }
@@ -38,8 +38,8 @@ pipeline {
     stage('Pushing to ECR') {
      steps{  
          script {
-                sh """docker tag ${IMAGE_REPO_NAME}:${IMAGE_TAG} ${REPOSITORY_URI}:$IMAGE_TAG"""
-                sh """docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}:${IMAGE_TAG}"""
+                sh """ docker tag aisdlc:latest 864899865567.dkr.ecr.us-east-1.amazonaws.com/aisdlc:latest"""
+                sh """docker push 864899865567.dkr.ecr.us-east-1.amazonaws.com/aisdlc:latest"""
          }
         }
       }
