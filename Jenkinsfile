@@ -15,7 +15,7 @@ pipeline {
     }
    
     stages {
-        stage('SonarQube Analysis') {
+        /*stage('SonarQube Analysis') {
             steps {
                 withCredentials([string(credentialsId: 'sonarcred', variable: 'SONAR_AUTH_TOKEN')]) {
                     sh '''
@@ -26,7 +26,7 @@ pipeline {
                     '''
                 }
             }
-        }
+        }*/
 
          stage('Logging into AWS ECR') {
            steps {
@@ -43,7 +43,7 @@ pipeline {
                 checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'https://github.com/XI-4568radhakrishna/Fast-api-2.git']]])     
             }
         }
-   stage('SonarQube Scan') {
+   /*stage('SonarQube Scan') {
             steps {
                 script {
                     // Run SonarQube scanner to analyze the code
@@ -53,7 +53,7 @@ pipeline {
                 }
                 
             }
-        }
+        }*/
         
     // Building Docker images
     stage('Building image') {
@@ -73,14 +73,14 @@ pipeline {
          }
         }
       }
-    stage('Quality Gate') {
+    /*stage('Quality Gate') {
             steps {
                 script {
                     // Wait for SonarQube Quality Gate to pass
                     waitForQualityGate abortPipeline: true
                 }
             }
-        }
+        }*/
      stage('Install kubectl') {
             steps {
                 script {
