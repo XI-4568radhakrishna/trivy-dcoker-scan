@@ -7,7 +7,7 @@ pipeline {
         IMAGE_TAG="latest"
         REPOSITORY_URI = "864899865567.dkr.ecr.us-east-1.amazonaws.com/aisdlc"
         EKS_CLUSTER_NAME = "sdlc-eks-cluster"
-        AWS_CREDENTIALS_ID = "awscred"
+        AWS_CREDENTIALS_ID = "awscreds"
         SONAR_URL = 'http://54.89.31.89:9000/'
         SONAR_USER = "admin"
         SONAR_PASS = "sonar@123"
@@ -40,7 +40,7 @@ pipeline {
         
         stage('Cloning Git') {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'https://github.com/XI-4568radhakrishna/Fast-api-2.git']]])     
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'gitcred', url: 'https://github.com/XI-4568radhakrishna/Fast-api-2.git']]])     
             }
         }
    /*stage('SonarQube Scan') {
