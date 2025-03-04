@@ -3,11 +3,11 @@ pipeline {
 
     environment {
         AWS_REGION = "us-east-1"
-        ECR_REPO = "864899865567.dkr.ecr.us-east-1.amazonaws.com/aisdlc"
+        ECR_REPO = "864899865567.dkr.ecr.${AWS_REGION}.amazonaws.com/aisdlc"
         IMAGE_TAG = "latest"
         SONAR_PROJECT_KEY = "sonar-devops"
         SONAR_HOST_URL = "http://3.95.57.59:9000"
-        SONAR_LOGIN = "sonarqube-token" // Store SonarQube token in Jenkins credentials
+        
     }
 
     stages {
@@ -28,17 +28,19 @@ pipeline {
         }
 
         stage('Run SonarQube Scan') {
+            environment {
+                SONAR_LOGIN = credentials('sonarqube-token')  // Fetch token from Jenkins credentials
+            }
             steps {
                 script {
                     sh """
                         docker run --rm \
-                        -v /var/lib/jenkins/workspace/ECR-EKS-sonarscaner:/usr/src \
-                        -e SONAR_HOST_URL="http://3.95.57.59:9000" \
-                        -e SONAR_LOGIN="sonarqube-token" \
+                        -v \$(pwd):/usr/src \
+                        -e SONAR_HOST_URL=$SONAR_HOST_URL \
+                        -e SONAR_LOGIN=$SONAR_LOGIN \
                         sonarsource/sonar-scanner-cli \
-                        -Dsonar.projectKey="sonar-devops" \
-                        -Dsonar.sources=/usr/src \
-                        -Dsonar.docker.image=864899865567.dkr.ecr.us-east-1.amazonaws.com/aisdlc:latest
+                        -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+                        -Dsonar.sources=/usr/src
                     """
                 }
             }
