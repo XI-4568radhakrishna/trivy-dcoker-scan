@@ -6,16 +6,34 @@ pipeline {
         IMAGE_REPO_NAME="aisdlc"
         IMAGE_TAG="latest"
         REPOSITORY_URI = "864899865567.dkr.ecr.us-east-1.amazonaws.com/aisdlc"
+        EKS_CLUSTER_NAME = "sdlc-eks-cluster"
+        AWS_CREDENTIALS_ID = "awscred"
+        SONAR_AUTH_TOKEN = "sonarqube-token"
+	SONARQUBE_UR = "http://3.95.57.59:9000"
+	sonarcred = "sonarcred"
     }
    
     stages {
-        
-         stage('Logging into AWS ECR') {
+        stage('SonarQube Analysis') {
             steps {
-                script {
-                sh """aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 864899865567.dkr.ecr.us-east-1.amazonaws.com """
+                withCredentials([string(credentialsId: 'sonarcred', variable: 'SONAR_AUTH_TOKEN')]) {
+                    sh '''
+                        sonar-scanner \
+                        -Dsonar.projectKey=sonar-devops \
+                        -Dsonar.host.url=$SONAR_URL \
+                        -Dsonar.login=$SONAR_AUTH_TOKEN
+                    '''
                 }
-                 
+            }
+        }
+
+         stage('Logging into AWS ECR') {
+           steps {
+              script {
+                  sh """aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 864899865567.dkr.ecr.us-east-1.amazonaws.com """
+                
+              }
+             
             }
         }
         
@@ -24,12 +42,13 @@ pipeline {
                 checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'https://github.com/XI-4568radhakrishna/Fast-api-2.git']]])     
             }
         }
-  
+   
+        
     // Building Docker images
     stage('Building image') {
       steps{
         script {
-        sh """docker build -t aisdlc ."""
+          dockerImage = docker.build "${IMAGE_REPO_NAME}:${IMAGE_TAG}"
         }
       }
     }
@@ -38,33 +57,47 @@ pipeline {
     stage('Pushing to ECR') {
      steps{  
          script {
-                sh """ docker tag aisdlc:latest 864899865567.dkr.ecr.us-east-1.amazonaws.com/aisdlc:latest"""
-                sh """docker push 864899865567.dkr.ecr.us-east-1.amazonaws.com/aisdlc:latest"""
+                sh """docker tag ${IMAGE_REPO_NAME}:${IMAGE_TAG} ${REPOSITORY_URI}:$IMAGE_TAG"""
+                sh """docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}:${IMAGE_TAG}"""
          }
         }
       }
-	stage('Install kubectl') {
+    stage('Quality Gate') {
             steps {
                 script {
-                    sh '''
-                    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-                    chmod +x kubectl
-		    sudo mv kubectl /usr/local/bin/
-                    kubectl version --client
-                    '''
+                    // Wait for SonarQube Quality Gate to pass
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
-	stage('Set up Kubeconfig for EKS') {
+     stage('Install kubectl') {
             steps {
                 script {
-                    
-                    sh "aws eks update-kubeconfig --region us-east-1 --name sdlc-eks-cluster"
-
-                    
+                    sh """
+                    curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.32.0/2024-12-20/bin/linux/amd64/kubectl
+                    chmod +x kubectl
+                    mv kubectl /usr/local/bin/
+                    """
                 }
             }
-       }
+        }
+    stage('Verify kubectl') {
+            steps {
+                sh 'kubectl version --client'
+            }
+        }
+     // Setting up EKS cluster configuration
+     stage('Set up Kubeconfig for EKS') {
+            steps {
+                script {
+                    withAWS(credentials: AWS_CREDENTIALS_ID, region: AWS_REGION) {
+                        sh "aws eks update-kubeconfig --region ${AWS_REGION} --name ${EKS_CLUSTER_NAME}"
+                        sh "kubectl get ns"
+                    }
+                }
+            }
+        }
+
        stage('Wait Before Test') {
             steps {
                 echo 'Waiting for 10 seconds before deployment...'
@@ -78,7 +111,19 @@ pipeline {
                     sh 'kubectl apply -f "sample-k8s-deployment.yaml"'
                     sh 'kubectl apply -f "sample-k8s-service.yaml"'
                 }
-            }
+            } 
+      }
+      stage('Deploying fastapi App to Kubernetes') {
+          
+            steps {
+                script {
+                    
+                    sh ('aws eks update-kubeconfig --name sdlc-eks-cluster --region us-east-1')
+                    sh "kubectl get ns"
+                    sh "kubectl apply -f sample-k8s-deployment.yaml"
+                    sh "kubectl apply -f sample-k8s-service.yaml"
+                }
+             }
         }
     }
 }
