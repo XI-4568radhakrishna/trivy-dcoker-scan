@@ -2,45 +2,44 @@ pipeline {
     agent any
 
     environment {
-        AWS_REGION = 'us-east-1'
-        AWS_ACCOUNT_ID = '864899865567'
-        ECR_REPO = 'aisdlc'
-        IMAGE_TAG = 'latest'
-        SONARQUBE_URL = 'http://3.95.57.59:9000'
-        SONARQUBE_TOKEN = 'sonar-token'
-	my_project = 'sonar-devops'
+        AWS_REGION = "us-east-1"
+        ECR_REPO = "864899865567.dkr.ecr.us-east-1.amazonaws.com/aisdlc"
+        IMAGE_TAG = "latest"
+        SONAR_PROJECT_KEY = "sonar-devops"
+        SONAR_HOST_URL = "http://3.95.57.59:9000"
+        SONAR_LOGIN = credentials('sonarqube-token') // Store SonarQube token in Jenkins credentials
     }
 
     stages {
-        stage('Authenticate with ECR') {
+        stage('Authenticate with AWS ECR') {
             steps {
-                sh 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 864899865567.dkr.ecr.us-east-1.amazonaws.com'
+                script {
+                    sh "aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO"
+                }
             }
         }
 
-        stage('Pull Image') {
+        stage('Pull Docker Image from ECR') {
             steps {
-                sh 'docker pull $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG'
+                script {
+                    sh "docker pull $ECR_REPO:$IMAGE_TAG"
+                }
             }
         }
 
-        stage('Extract Source Code') {
+        stage('Run SonarQube Scan') {
             steps {
-                sh 'docker run --rm $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG cat /app > source_code.tar'
-                sh 'mkdir source_code && tar -xf source_code.tar -C source_code'
-            }
-        }
-
-        stage('SonarQube Scan') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh '''
-                    sonar-scanner \
-                        -Dsonar.projectKey=my_project \
-                        -Dsonar.sources=source_code \
-                        -Dsonar.host.url=$SONARQUBE_URL \
-                        -Dsonar.login=$SONARQUBE_TOKEN
-                    '''
+                script {
+                    sh """
+                        docker run --rm \
+                        -v \$(pwd):/usr/src \
+                        -e SONAR_HOST_URL=$SONAR_HOST_URL \
+                        -e SONAR_LOGIN=$SONAR_LOGIN \
+                        sonarsource/sonar-scanner-cli \
+                        -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+                        -Dsonar.sources=/usr/src \
+                        -Dsonar.docker.image=$ECR_REPO:$IMAGE_TAG
+                    """
                 }
             }
         }
@@ -48,11 +47,8 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 script {
-                    timeout(time: 1, unit: 'MINUTES') {
-                        def qg = waitForQualityGate()
-                        if (qg.status != 'OK') {
-                            error "Pipeline failed due to SonarQube quality gate failure"
-                        }
+                    timeout(time: 5, unit: 'MINUTES') {
+                        waitForQualityGate abortPipeline: true
                     }
                 }
             }
