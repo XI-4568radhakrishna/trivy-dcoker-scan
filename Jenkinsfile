@@ -33,10 +33,10 @@ pipeline {
                     sh """
                         docker run --rm \
                         -v /var/lib/jenkins/workspace/ECR-EKS-sonarscaner:/usr/src \
-                        -e SONAR_HOST_URL=http://3.95.57.59:9000 \
-                        -e SONAR_LOGIN=sonarqube-token \
+                        -e SONAR_HOST_URL="http://3.95.57.59:9000" \
+                        -e SONAR_LOGIN="sonarqube-token" \
                         sonarsource/sonar-scanner-cli \
-                        -Dsonar.projectKey=sonar-devops \
+                        -Dsonar.projectKey="sonar-devops" \
                         -Dsonar.sources=/usr/src \
                         -Dsonar.docker.image=864899865567.dkr.ecr.us-east-1.amazonaws.com/aisdlc:latest
                     """
