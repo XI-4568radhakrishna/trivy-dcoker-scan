@@ -7,7 +7,7 @@ pipeline {
         IMAGE_TAG = "latest"
         SONAR_PROJECT_KEY = "sonar-devops"
         SONAR_HOST_URL = "http://3.95.57.59:9000"
-        SONAR_LOGIN = credentials('sonarqube-token') // Store SonarQube token in Jenkins credentials
+        SONAR_LOGIN = "sonarqube-token" // Store SonarQube token in Jenkins credentials
     }
 
     stages {
