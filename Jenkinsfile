@@ -32,13 +32,13 @@ pipeline {
                 script {
                     sh """
                         docker run --rm \
-                        -v \$(pwd):/usr/src \
-                        -e SONAR_HOST_URL=$SONAR_HOST_URL \
-                        -e SONAR_LOGIN=$SONAR_LOGIN \
+                        -v /var/lib/jenkins/workspace/ECR-EKS-sonarscaner:/usr/src \
+                        -e SONAR_HOST_URL=http://3.95.57.59:9000 \
+                        -e SONAR_LOGIN=sonarqube-token \
                         sonarsource/sonar-scanner-cli \
-                        -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+                        -Dsonar.projectKey=sonar-devops \
                         -Dsonar.sources=/usr/src \
-                        -Dsonar.docker.image=$ECR_REPO:$IMAGE_TAG
+                        -Dsonar.docker.image=864899865567.dkr.ecr.us-east-1.amazonaws.com/aisdlc:latest
                     """
                 }
             }
