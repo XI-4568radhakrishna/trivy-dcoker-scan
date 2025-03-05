@@ -12,16 +12,19 @@ pipeline {
             }
         }
         stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQube') { 
-                    sh 'sonar-scanner \
-                        -Dsonar.projectKey='sonar-devops' \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url='http://3.95.57.59:9000'\
-                        -Dsonar.login='squ_5d4088fc8f55673957bdfae044321c1528c1350d'\
-                }
-            }
+    steps {
+        withSonarQubeEnv('SonarQube') { 
+            sh '''
+                sonar-scanner \
+                    -Dsonar.projectKey=sonar-devops \
+                    -Dsonar.sources=. \
+                    -Dsonar.host.url=http://3.95.57.59:9000 \
+                    -Dsonar.login=squ_5d4088fc8f55673957bdfae044321c1528c1350d
+            '''
         }
+    }
+}
+
         stage('Quality Gate') {
             steps {
                 script {
