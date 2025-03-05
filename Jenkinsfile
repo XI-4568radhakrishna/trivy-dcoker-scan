@@ -2,55 +2,30 @@ pipeline {
     agent any
 
     environment {
-        AWS_REGION = "us-east-1"
-        ECR_REPO = "864899865567.dkr.ecr.${AWS_REGION}.amazonaws.com/aisdlc"
-        IMAGE_TAG = "latest"
-        SONAR_PROJECT_KEY = "sonar-devops"
-        SONAR_HOST_URL = "http://3.95.57.59:9000"
-        
-        
+        SONARQUBE_URL = 'http://3.95.57.59:9000' // SonarQube server name in Jenkins
     }
 
     stages {
-        stage('Authenticate with AWS ECR') {
+        stage('Checkout') {
             steps {
-                script {
-                    sh "aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO"
+                git url: 'https://github.com/XI-4568radhakrishna/EC2-EKS-SonarQube.git', branch: 'main'
+            }
+        }
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') { 
+                    sh 'sonar-scanner \
+                        -Dsonar.projectKey=sonar-devops \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=http://3.95.57.59:9000//your-sonarqube-server:9000 \
+                        -Dsonar.login='squ_5d4088fc8f55673957bdfae044321c1528c1350d'
                 }
             }
         }
-
-        stage('Pull Docker Image from ECR') {
-            steps {
-                script {
-                    sh "docker pull $ECR_REPO:$IMAGE_TAG"
-                }
-            }
-        }
-
-        stage('Run SonarQube Scan') {
-            environment {
-                SONAR_LOGIN = "squ_5d4088fc8f55673957bdfae044321c1528c1350d"  // Fetch token from Jenkins credentials
-            }
-            steps {
-                script {
-                    sh """
-                        docker run --rm \
-                        -v \$(pwd):/usr/src \
-                        -e SONAR_HOST_URL=$SONAR_HOST_URL \
-                        -e SONAR_LOGIN="squ_5d4088fc8f55673957bdfae044321c1528c1350d" \
-                        sonarsource/sonar-scanner-cli \
-                        -Dsonar.projectKey=$SONAR_PROJECT_KEY \
-                        -Dsonar.sources=/usr/src
-                    """
-                }
-            }
-        }
-
         stage('Quality Gate') {
             steps {
                 script {
-                    timeout(time: 5, unit: 'MINUTES') {
+                    timeout(time: 2, unit: 'MINUTES') {
                         waitForQualityGate abortPipeline: true
                     }
                 }
