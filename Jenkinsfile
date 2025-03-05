@@ -30,7 +30,7 @@ pipeline {
 
         stage('Run SonarQube Scan') {
             environment {
-                SONAR_LOGIN = squ_5d4088fc8f55673957bdfae044321c1528c1350d  // Fetch token from Jenkins credentials
+                SONAR_LOGIN = "squ_5d4088fc8f55673957bdfae044321c1528c1350d"  // Fetch token from Jenkins credentials
             }
             steps {
                 script {
