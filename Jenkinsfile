@@ -38,7 +38,7 @@ pipeline {
                         docker run --rm \
                         -v \$(pwd):/usr/src \
                         -e SONAR_HOST_URL=$SONAR_HOST_URL \
-                        -e SONAR_LOGIN=$SONAR_LOGIN \
+                        -e SONAR_LOGIN="squ_5d4088fc8f55673957bdfae044321c1528c1350d" \
                         sonarsource/sonar-scanner-cli \
                         -Dsonar.projectKey=$SONAR_PROJECT_KEY \
                         -Dsonar.sources=/usr/src
