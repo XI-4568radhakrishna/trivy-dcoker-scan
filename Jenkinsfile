@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         SONARQUBE_URL = 'http://3.95.57.59:9000' // SonarQube server name in Jenkins
-        sonarScanner = 'sonarinstall'
+        sonarScanner = 'sonar-install'
     }
 
     stages {
