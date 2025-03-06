@@ -35,23 +35,23 @@ pipeline {
       }
     }
 
-        stage('Trivy Scan') {
-            steps {
-                script {
-                    sh "trivy image --format json -o ${SCAN_REPORT} ${IMAGE_NAME}:${IMAGE_TAG}"
+    stage('Trivy Scan') {
+       steps {
+            script {
+                sh "trivy image --format json -o ${SCAN_REPORT} ${IMAGE_NAME}:${IMAGE_TAG}"
                 }
             }
         }
 
-        stage('Publish Report') {
-            steps {
-                publishHTML([
-                    allowMissing: false,
-                    alwaysLinkToLastBuild: true,
-                    keepAll: true,
-                    reportDir: '.',
-                    reportFiles: SCAN_REPORT,
-                    reportName: 'Trivy Vulnerability Report'
+    stage('Publish Report') {
+        steps {
+            publishHTML([
+                allowMissing: false,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: '.',
+                reportFiles: SCAN_REPORT,
+                reportName: 'Trivy Vulnerability Report'
                 ])
             }
         }
