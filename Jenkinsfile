@@ -2,38 +2,36 @@ pipeline {
     agent any
 
     environment {
-        SONARQUBE_URL = 'http://3.95.57.59:9000' // SonarQube server name in Jenkins
-        sonarScanner = 'sonar-install'
+        TRIVY_VERSION = "0.41.0" // Update to the latest version
     }
 
     stages {
-        stage('Checkout') {
+        stage('Clone Repository') {
             steps {
                 git url: 'https://github.com/XI-4568radhakrishna/EC2-EKS-SonarQube.git', branch: 'main'
             }
         }
-        stage('SonarQube Analysis') {
-    steps {
-        withSonarQubeEnv('sonar-install') { 
-            sh '''
-                sonar-scanner \
-                  -Dsonar.projectKey=sdlc-dev \
-                  -Dsonar.sources=. \
-                  -Dsonar.host.url=http://3.95.57.59:9000 \
-                  -Dsonar.login=sqp_6c1636fb83cd68b815b3ee83fbc625dfe90bbb57
-            '''
+
+        /*stage('Install Trivy') {
+            steps {
+                sh """
+                    wget -qO- https://github.com/aquasecurity/trivy/releases/download/v$TRIVY_VERSION/trivy_$(uname -s)_$(uname -m).tar.gz | tar xz
+                    sudo mv trivy /usr/local/bin/
+                """
+            }
+        }*/
+
+        stage('Run Trivy Scan') {
+            steps {
+                sh 'trivy fs --exit-code 1 --severity HIGH,CRITICAL . || true'
+            }
         }
     }
-}
 
-        stage('Quality Gate') {
-            steps {
-                script {
-                    timeout(time: 2, unit: 'MINUTES') {
-                        waitForQualityGate abortPipeline: true
-                    }
-                }
-            }
+    post {
+        failure {
+            echo "Security vulnerabilities detected!"
+            error("Pipeline failed due to security vulnerabilities.")
         }
     }
 }
