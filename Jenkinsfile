@@ -9,49 +9,48 @@ pipeline {
         AWS_DEFAULT_REGION="us-east-1"
         IMAGE_REPO_NAME="aisdlc"
         REPOSITORY_URI = "864899865567.dkr.ecr.us-east-1.amazonaws.com/aisdlc"
-	
     }
 
-    stage('Cloning Git') {
+    stages {
+        stage('Cloning Git') {
             steps {
                 checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'https://github.com/XI-4568radhakrishna/Fast-api-2.git']]])     
             }
         }
-    // AWS ECR login 
-     stage('Logging into AWS ECR') {
+        // AWS ECR login 
+        stage('Logging into AWS ECR') {
             steps {
                 script {
-                sh """aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 864899865567.dkr.ecr.us-east-1.amazonaws.com """
+                   sh """aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 864899865567.dkr.ecr.us-east-1.amazonaws.com """
                 }
                  
             }
         }
-        // Building Docker images
-    stage('Building image') {
-      steps{
-        script {
-        sh """docker build -t aisdlc ."""
+        stage('Building image') {
+            steps{
+               script {
+                  sh """docker build -t aisdlc ."""
+               }
+            }  
         }
-      }
-    }
 
-    stage('Trivy Scan') {
-       steps {
-            script {
-                sh "trivy image --format json -o ${SCAN_REPORT} ${IMAGE_NAME}:${IMAGE_TAG}"
+        stage('Trivy Scan') {
+            steps {
+                script {
+                    sh "trivy image --format json -o ${SCAN_REPORT} ${IMAGE_NAME}:${IMAGE_TAG}"
                 }
             }
         }
 
-    stage('Publish Report') {
-        steps {
-            publishHTML([
-                allowMissing: false,
-                alwaysLinkToLastBuild: true,
-                keepAll: true,
-                reportDir: '.',
-                reportFiles: SCAN_REPORT,
-                reportName: 'Trivy Vulnerability Report'
+        stage('Publish Report') {
+            steps {
+                publishHTML([
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: '.',
+                    reportFiles: SCAN_REPORT,
+                    reportName: 'Trivy Vulnerability Report'
                 ])
             }
         }
