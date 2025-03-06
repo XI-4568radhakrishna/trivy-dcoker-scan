@@ -2,36 +2,65 @@ pipeline {
     agent any
 
     environment {
-        TRIVY_VERSION = "0.41.0" // Update to the latest version
+        IMAGE_NAME = "aisdlc"
+        IMAGE_TAG = "latest"
+        SCAN_REPORT = "trivy-report.json"
+        AWS_ACCOUNT_ID="864899865567"
+        AWS_DEFAULT_REGION="us-east-1"
+        IMAGE_REPO_NAME="aisdlc"
+        REPOSITORY_URI = "864899865567.dkr.ecr.us-east-1.amazonaws.com/aisdlc"
+	
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Checkout') {
             steps {
-                git url: 'https://github.com/XI-4568radhakrishna/EC2-EKS-SonarQube.git', branch: 'main'
+                git 'https://github.com/XI-4568radhakrishna/trivy-dcoker-scan.git'
+            }
+        }
+    // AWS ECR login 
+     stage('Logging into AWS ECR') {
+            steps {
+                script {
+                sh """aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 864899865567.dkr.ecr.us-east-1.amazonaws.com """
+                }
+                 
+            }
+        }
+        // Building Docker images
+    stage('Building image') {
+      steps{
+        script {
+        sh """docker build -t aisdlc ."""
+        }
+      }
+    }
+
+        stage('Trivy Scan') {
+            steps {
+                script {
+                    sh "trivy image --format json -o ${SCAN_REPORT} ${IMAGE_NAME}:${IMAGE_TAG}"
+                }
             }
         }
 
-        /*stage('Install Trivy') {
+        stage('Publish Report') {
             steps {
-                sh """
-                    wget -qO- https://github.com/aquasecurity/trivy/releases/download/v$TRIVY_VERSION/trivy_$(uname -s)_$(uname -m).tar.gz | tar xz
-                    sudo mv trivy /usr/local/bin/
-                """
-            }
-        }*/
-
-        stage('Run Trivy Scan') {
-            steps {
-                sh 'trivy fs --exit-code 1 --severity HIGH,CRITICAL . || true'
+                publishHTML([
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: '.',
+                    reportFiles: SCAN_REPORT,
+                    reportName: 'Trivy Vulnerability Report'
+                ])
             }
         }
     }
 
     post {
-        failure {
-            echo "Security vulnerabilities detected!"
-            error("Pipeline failed due to security vulnerabilities.")
+        always {
+            archiveArtifacts artifacts: SCAN_REPORT, fingerprint: true
         }
     }
 }
