@@ -12,10 +12,9 @@ pipeline {
 	
     }
 
-    stages {
-        stage('Checkout') {
+    stage('Cloning Git') {
             steps {
-                git 'https://github.com/XI-4568radhakrishna/trivy-dcoker-scan.git'
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'https://github.com/XI-4568radhakrishna/Fast-api-2.git']]])     
             }
         }
     // AWS ECR login 
