@@ -17,10 +17,10 @@ pipeline {
         withSonarQubeEnv('sonar-install') { 
             sh '''
                 sonar-scanner \
-                  -Dsonar.projectKey=Test-Dev \
+                  -Dsonar.projectKey=sdlc-dev \
                   -Dsonar.sources=. \
                   -Dsonar.host.url=http://3.95.57.59:9000 \
-                  -Dsonar.login=sqp_591b3288f47bafeb648cc0427892e4cf9954f66c
+                  -Dsonar.login=sqp_6c1636fb83cd68b815b3ee83fbc625dfe90bbb57
             '''
         }
     }
